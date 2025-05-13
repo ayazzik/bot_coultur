@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Простой Mini App</title>
+    <title>Простой Mini App (Отладка)</title>
     <!-- Подключаем официальный скрипт Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -15,8 +15,11 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            color: var(--tg-theme-text-color, #000000); /* Используем цвета темы Telegram */
+            padding: 20px;
+            box-sizing: border-box;
+            color: var(--tg-theme-text-color, #000000);
             background-color: var(--tg-theme-bg-color, #ffffff);
+            text-align: center;
         }
         button {
             padding: 15px 30px;
@@ -26,77 +29,96 @@
             border-radius: 8px;
             color: var(--tg-theme-button-text-color, #ffffff);
             background-color: var(--tg-theme-button-color, #007bff);
+            margin-bottom: 20px;
         }
         .message {
-            margin-top: 20px;
             font-size: 16px;
             color: var(--tg-theme-hint-color, #707579);
+            word-wrap: break-word;
+        }
+        .error {
+            color: var(--tg-theme-destructive-text-color, red);
         }
     </style>
 </head>
 <body>
 
     <button id="sendOkButton">Отправить "ок"</button>
-    <p id="statusMessage" class="message"></p>
+    <p id="statusMessage" class="message">Нажмите кнопку, чтобы отправить сообщение "ок" боту.</p>
 
     <script>
+        const statusMessage = document.getElementById('statusMessage');
+
+        function logToApp(message, isError = false) {
+            console.log(message); // Лог в консоль разработчика
+            if (statusMessage) {
+                statusMessage.textContent = message;
+                if (isError) {
+                    statusMessage.classList.add('error');
+                } else {
+                    statusMessage.classList.remove('error');
+                }
+            }
+        }
+
         // Убедимся, что объект Telegram.WebApp доступен
         if (window.Telegram && window.Telegram.WebApp) {
             const tg = window.Telegram.WebApp;
 
+            logToApp("Telegram WebApp API найдено. Инициализация...");
+
             // Сообщаем Telegram, что Mini App готов к отображению
             tg.ready();
+            logToApp("Mini App готов (tg.ready() вызван).");
 
             // Находим кнопку
             const sendButton = document.getElementById('sendOkButton');
-            const statusMessage = document.getElementById('statusMessage');
 
             if (sendButton) {
                 sendButton.addEventListener('click', function() {
-                    // Текст, который мы хотим отправить боту
+                    logToApp("Кнопка 'Отправить \"ок\"' нажата.");
+                    
                     const messageToSend = "ок";
 
                     try {
+                        logToApp(`Попытка отправить сообщение: "${messageToSend}"...`);
+                        
                         // Отправляем данные боту
-                        // Это сообщение появится в ЛС пользователя с ботом от имени пользователя
                         tg.sendData(messageToSend);
                         
-                        // (Опционально) Показать сообщение об успехе в Mini App
-                        if (statusMessage) {
-                            statusMessage.textContent = `Сообщение "${messageToSend}" отправлено! Проверьте чат с ботом.`;
-                        }
-
-                        // (Опционально) Закрыть Mini App после отправки
+                        logToApp(`Сообщение "${messageToSend}" передано в Telegram для отправки! Пожалуйста, проверьте ваш чат с ботом. Mini App не будет закрыт автоматически.`);
+                        
+                        // ВАЖНО: tg.close() ЗАКОММЕНТИРОВАН для отладки
                         // tg.close(); 
-                        // Раскомментируйте tg.close(), если хотите, чтобы Mini App закрывался сразу
 
                     } catch (error) {
-                        console.error("Ошибка при отправке данных:", error);
-                        if (statusMessage) {
-                            statusMessage.textContent = "Произошла ошибка при отправке. См. консоль.";
-                        }
+                        console.error("Ошибка при вызове tg.sendData:", error);
+                        logToApp(`Произошла ошибка при отправке: ${error.message || 'Неизвестная ошибка'}. См. консоль разработчика.`, true);
                         // Можно также использовать tg.showAlert() для отображения ошибки пользователю
                         // tg.showAlert(`Ошибка: ${error.message || 'Неизвестная ошибка'}`);
                     }
                 });
             } else {
                 console.error("Кнопка 'sendOkButton' не найдена.");
-                if (statusMessage) {
-                    statusMessage.textContent = "Ошибка: кнопка не найдена.";
-                }
+                logToApp("Ошибка: кнопка 'sendOkButton' не найдена в HTML.", true);
             }
 
             // (Опционально) Расширяем Mini App на всю высоту
             tg.expand();
+            logToApp("Mini App расширен (tg.expand() вызван).");
 
         } else {
             console.error("Telegram WebApp API не найдено. Убедитесь, что приложение открыто в клиенте Telegram.");
             const bodyElement = document.body;
             const errorMsg = document.createElement('p');
-            errorMsg.textContent = "Это приложение должно быть открыто внутри Telegram.";
+            errorMsg.textContent = "Это приложение должно быть открыто внутри Telegram. Telegram WebApp API не доступно.";
             errorMsg.style.color = "red";
-            bodyElement.innerHTML = ''; // Очищаем тело документа
-            bodyElement.appendChild(errorMsg);
+            if (statusMessage) { // Если statusMessage существует, используем его
+                logToApp("Telegram WebApp API не найдено. Убедитесь, что приложение открыто в клиенте Telegram.", true);
+            } else { // Иначе, если даже statusMessage нет, добавляем новый элемент
+                 bodyElement.innerHTML = ''; 
+                 bodyElement.appendChild(errorMsg);
+            }
         }
     </script>
 
