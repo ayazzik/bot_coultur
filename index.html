@@ -6,17 +6,18 @@
 </head>
 <body>
     <p>Super Minimal Test</p>
-    <button id="testButton">Send 'minimal_test_msg'</button>
+    <button id="testButton">Send 'minimal_data_payload'</button>
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
 
         document.getElementById('testButton').addEventListener('click', function() {
-            const message = 'minimal_test_msg';
+            const dataPayload = 'minimal_data_payload_for_testtest_bot';
             try {
-                alert('Перед вызовом tg.sendData с: ' + message);
-                tg.sendData(message);
-                alert('После вызова tg.sendData. Проверьте чат с ботом.');
+                alert('Перед вызовом tg.sendData с: ' + dataPayload);
+                tg.sendData(dataPayload);
+                // Этот alert говорит, что вызов sendData прошел без JS-ошибки в Mini App
+                alert('Вызов tg.sendData выполнен. Если бот настроен на получение web_app_data, он должен был их получить. Если ожидалось сообщение в чате, проверьте чат.');
             } catch (e) {
                 alert('Ошибка при tg.sendData: ' + e.message);
                 console.error("Error in sendData:", e);
