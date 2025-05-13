@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простой Mini App</title>
+    <!-- Подключаем официальный скрипт Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: var(--tg-theme-text-color, #000000); /* Используем цвета темы Telegram */
+            background-color: var(--tg-theme-bg-color, #ffffff);
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            color: var(--tg-theme-button-text-color, #ffffff);
+            background-color: var(--tg-theme-button-color, #007bff);
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 16px;
+            color: var(--tg-theme-hint-color, #707579);
+        }
+    </style>
+</head>
+<body>
+
+    <button id="sendOkButton">Отправить "ок"</button>
+    <p id="statusMessage" class="message"></p>
+
+    <script>
+        // Убедимся, что объект Telegram.WebApp доступен
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+
+            // Сообщаем Telegram, что Mini App готов к отображению
+            tg.ready();
+
+            // Находим кнопку
+            const sendButton = document.getElementById('sendOkButton');
+            const statusMessage = document.getElementById('statusMessage');
+
+            if (sendButton) {
+                sendButton.addEventListener('click', function() {
+                    // Текст, который мы хотим отправить боту
+                    const messageToSend = "ок";
+
+                    try {
+                        // Отправляем данные боту
+                        // Это сообщение появится в ЛС пользователя с ботом от имени пользователя
+                        tg.sendData(messageToSend);
+                        
+                        // (Опционально) Показать сообщение об успехе в Mini App
+                        if (statusMessage) {
+                            statusMessage.textContent = `Сообщение "${messageToSend}" отправлено! Проверьте чат с ботом.`;
+                        }
+
+                        // (Опционально) Закрыть Mini App после отправки
+                        // tg.close(); 
+                        // Раскомментируйте tg.close(), если хотите, чтобы Mini App закрывался сразу
+
+                    } catch (error) {
+                        console.error("Ошибка при отправке данных:", error);
+                        if (statusMessage) {
+                            statusMessage.textContent = "Произошла ошибка при отправке. См. консоль.";
+                        }
+                        // Можно также использовать tg.showAlert() для отображения ошибки пользователю
+                        // tg.showAlert(`Ошибка: ${error.message || 'Неизвестная ошибка'}`);
+                    }
+                });
+            } else {
+                console.error("Кнопка 'sendOkButton' не найдена.");
+                if (statusMessage) {
+                    statusMessage.textContent = "Ошибка: кнопка не найдена.";
+                }
+            }
+
+            // (Опционально) Расширяем Mini App на всю высоту
+            tg.expand();
+
+        } else {
+            console.error("Telegram WebApp API не найдено. Убедитесь, что приложение открыто в клиенте Telegram.");
+            const bodyElement = document.body;
+            const errorMsg = document.createElement('p');
+            errorMsg.textContent = "Это приложение должно быть открыто внутри Telegram.";
+            errorMsg.style.color = "red";
+            bodyElement.innerHTML = ''; // Очищаем тело документа
+            bodyElement.appendChild(errorMsg);
+        }
+    </script>
+
+</body>
+</html>
